@@ -16,6 +16,6 @@ server.start(
     }
   },
   details => {
-    console.log(`Server is no running on port https:/localhost:${details.port}`);
+    console.log(`Server is now running on port https:/localhost:${details.port}`);
   }
 );
