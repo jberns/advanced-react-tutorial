@@ -9,10 +9,20 @@ const maxAge = 1000 * 60 * 60 * 24 * 365; //365 days
 
 const Mutations = {
   async createItem(parent, args, ctx, info) {
-    //TODO: Check if they are logged in
+    if (!ctx.request.userId) {
+      throw new Error('You must be logged in!');
+    }
     const item = await ctx.db.mutation.createItem(
       {
-        data: { ...args },
+        data: {
+          ...args,
+          //This is how to make a relationship between an item and a user
+          user: {
+            connect: {
+              id: ctx.request.userId,
+            },
+          },
+        },
       },
       info,
     );
