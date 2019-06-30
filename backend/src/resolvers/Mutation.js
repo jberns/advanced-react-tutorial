@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { randomBytes } = require('crypto');
 const { promisify } = require('util');
+const { transport, makeANiceEmail } = require('../mail');
 
 const resetTime = 3600000; //1 hour
 const maxAge = 1000 * 60 * 60 * 24 * 365; //365 days
@@ -109,11 +110,21 @@ const Mutations = {
       where: { email: args.email },
       data: { resetToken, resetTokenExpiry },
     });
-    return { message: 'Thanks!' };
     // 3. Email them that reset token
+    const mailRes = await transport.sendMail({
+      from: 'josh@josh.com',
+      to: user.email,
+      subject: 'Your Password Reset Token',
+      html: makeANiceEmail(
+        `Your Password Reset Token is here! 
+        \n\n 
+        <a href="${process.env.FRONTEND_URL}/reset?resetToken=${resetToken}">Click here to reset</a>`,
+      ),
+    });
+    // 4. Return the message
+    return { message: 'Thanks!' };
   },
   async resetPassword(parent, args, ctx, info) {
-    console.log(args);
     // 1. check if the passwords match
     if (args.password !== args.confirmPassword) {
       throw new Error("Passwords don't match!");
